@@ -33,11 +33,18 @@ dựng database; bài tập 2.2 xây Auth API trên nền database đó.
 - Bảng `users`, enum `Role` (`admin`, `user`)
 - Seed admin user
 
-### Bài tập 2.2 — Auth Server (làm sau)
+### Bài tập 2.2 — Auth Server (spec Unit 06–11 đã viết)
 
-- Fastify HTTP server
-- Đăng ký, đăng nhập, quên mật khẩu
-- JWT, validate bằng Joi, hash mật khẩu
+Yêu cầu theo file kế hoạch:
+
+1. Fastify: server HTTP
+2. Quản lý người dùng: lưu trong DB của bài 2.1; đăng ký, đăng nhập, quên mật khẩu
+3. JWT: cấp token khi đăng nhập thành công; xác thực token ở các request sau
+4. Joi: validate payload (username, password, ...) trước khi xử lý
+5. Bảo mật: hash mật khẩu trước khi lưu
+
+Endpoint: `GET /health`, `POST /auth/register`, `POST /auth/login`, `GET /me`, `GET /users` (admin),
+`POST /auth/forgot-password`, `POST /auth/reset-password`.
 
 ## Scope
 
@@ -45,10 +52,11 @@ dựng database; bài tập 2.2 xây Auth API trên nền database đó.
 
 - Bảng `users`, enum `Role`, seed admin (bài 2.1)
 - Hạ tầng local bằng Docker Compose
+- Auth API với Fastify, JWT, Joi (bài 2.2)
 
-### Out of Scope (ở giai đoạn bài 2.1)
+### Out of Scope
 
-- HTTP API, JWT, Joi (bài 2.2)
+- Refresh token, đăng xuất/thu hồi token, rate limit, gửi email thật, xác minh email, Swagger (bài 2.2)
 - GraphQL (Ngày 3)
 - Bảng invoice (Ngày 4)
 - Deploy lên cloud / LocalStack (Tuần 2)
@@ -64,3 +72,14 @@ dựng database; bài tập 2.2 xây Auth API trên nền database đó.
 7. `npm run check` (lint + format + typecheck + unit test) không báo lỗi
 8. `npm run test:integration` đạt trên Postgres đã migrate
 9. `.env` không bị commit lên git
+
+### Tiêu chí thành công bài 2.2
+
+1. `npm run dev` chạy server Fastify; `GET /health` trả `status: ok`
+2. Đăng ký tạo user role `user`, mật khẩu lưu dạng bcrypt hash; trùng email/username trả 409
+3. Đăng nhập đúng trả JWT; sai thông tin trả 401 cùng một message
+4. `GET /me` cần token hợp lệ; không token, token sai hoặc hết hạn trả 401
+5. `GET /users` chỉ admin gọi được (user thường bị 403)
+6. Mọi payload sai bị Joi chặn với 400 kèm `details`; payload đăng ký có `role` bị từ chối
+7. Quên mật khẩu: token lưu dạng hash, dùng một lần, có hạn; response không lộ email có tồn tại hay không
+8. `npm run check` và `npm run test:integration` đạt

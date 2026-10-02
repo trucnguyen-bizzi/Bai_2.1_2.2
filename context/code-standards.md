@@ -113,22 +113,31 @@ Mình bổ sung để phù hợp với TypeScript, Prisma và bảo mật. Nếu
 - `.env` nằm trong `.gitignore`; `.env.example` không chứa giá trị thật.
 
 ### API Routes (áp dụng cho bài 2.2)
-- Validate input bằng Joi trước khi chạy logic.
-- Xác thực (JWT) và phân quyền trước mọi thao tác thay đổi dữ liệu.
-- Response nhất quán; dùng mã HTTP đúng (400, 401, 403, 404, 409).
-- Không trả `passwordHash` ra ngoài trong bất kỳ response nào.
-- Forgot-password luôn trả cùng một response dù email có tồn tại hay không.
+- Validate input bằng Joi trước khi chạy logic; schema Joi được gắn vào route qua `schema: { body: ... }`.
+- Từ chối field lạ trong payload (không dùng `stripUnknown`), để client không lén gửi field như `role`.
+- Route chỉ nhận request, gọi service và trả response; không đặt logic nghiệp vụ trong route.
+- Service nhận `prisma` qua tham số (giống `seedAdmin`) để test được.
+- Mỗi route plugin là một default export, tên file trùng tên hàm (`authRoutes.ts`).
+- Xác thực (JWT) và phân quyền trước mọi thao tác thay đổi dữ liệu; `authenticate` chạy trước `requireRole`.
+- Response lỗi theo một định dạng chung `{ statusCode, error, message, details? }`; dùng mã HTTP đúng (400, 401, 403, 404, 409).
+- Lỗi 5xx không lộ stack trace; chi tiết chỉ ghi vào log.
+- Không trả `passwordHash` hay trường reset token trong bất kỳ response nào; luôn đi qua `toPublicUser`.
+- Lỗi đăng nhập luôn cùng một message; forgot-password luôn trả cùng một response dù email có tồn tại hay không.
+- Không đặt secret, token hay mật khẩu vào URL hoặc query string.
 
 ## File Organization
 
 - `prisma/schema.prisma`, `prisma/migrations/`, `prisma/seed.ts`
-- `src/index.ts` — điểm vào ứng dụng
+- `src/index.ts` — điểm vào: build app, listen, tắt êm
+- `src/buildApp.ts` — dựng FastifyInstance (dùng cho server và test với `app.inject`)
 - `src/lib/prisma.ts` — PrismaClient dùng chung (default export)
 - `src/lib/hashPassword.ts`, `verifyPassword.ts`, `seedAdmin.ts` — mỗi file một default export, tên file trùng tên hàm (23.6, 23.7)
 - `tests/unit/`, `tests/integration/` — test
-- `src/modules/<name>/` — route, service, schema theo từng module (bài 2.2)
-- `src/plugins/` — plugin dùng chung (jwt...) (bài 2.2)
-- `src/config/` — đọc và kiểm tra biến môi trường (bài 2.2)
+- `src/modules/<name>/` — route, service, schema Joi theo từng module (`auth`, `users`)
+- `src/plugins/` — plugin dùng chung: prisma, errorHandler, joiValidator, jwt
+- `src/hooks/` — hook dùng lại (requireRole)
+- `src/types/` — khai báo kiểu cho Fastify (`app.prisma`, `app.authenticate`, payload JWT)
+- `src/config/` — đọc và kiểm tra biến môi trường (`getEnv`, `getAdminSeedConfig`)
 - `scripts/` — script kiểm tra/hỗ trợ (ví dụ `verify-db.ts`)
 - Gốc project: `docker-compose.yml`, `.env.example`, `eslint.config.mjs`, `.prettierrc.json`
 
@@ -140,3 +149,5 @@ Mình bổ sung để phù hợp với TypeScript, Prisma và bảo mật. Nếu
 2. Tài liệu chuẩn cho JavaScript; team có chuẩn riêng cho TypeScript không?
 3. Cấm `for..of` (11.1) có áp dụng cả cho code async/await tuần tự không? Hiện ESLint
    đang chặn tất cả `for..of`.
+4. Bài 2.2: đăng nhập bằng `username` (theo file kế hoạch) hay bằng `email`? Có cần refresh token không?
+   Email có cần chuẩn hoá chữ thường ở cả username không? (Hiện chỉ chuẩn hoá email.)
