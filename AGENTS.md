@@ -54,8 +54,8 @@ Từng bước riêng:
 | `npm run db:seed` | Seed admin (idempotent) |
 | `npm run db:verify` | Kiểm tra tự động yêu cầu 2.1, exit 0 nếu đạt |
 | `npm run db:studio` | Xem dữ liệu |
-| `npm run dev` | Chạy Fastify server ở chế độ watch |
-| `npm start` | Chạy Fastify server |
+| `npm run dev` | Chạy Fastify server ở chế độ watch (đọc `HOST` và `PORT`) |
+| `npm start` | Chạy Fastify server một lần (đọc và validate cấu hình môi trường) |
 | `npm run typecheck` | Generate + `tsc --noEmit` |
 | `npm run lint` | ESLint + Prettier check theo coding standard của team |
 | `npm run lint:fix` | Tự sửa lỗi lint và format |
@@ -102,6 +102,13 @@ Chi tiết ở `context/code-standards.md`. Tóm tắt các điểm hay bị vi 
 - Không sửa test cho pass; nếu test fail thì sửa code hoặc giải thích vì sao test sai.
 
 ## Lưu ý môi trường
+
+- Cấu hình ứng dụng trong `.env`: `PORT` (mặc định `3000`), `HOST` (mặc định `127.0.0.1`),
+  `JWT_SECRET` (bắt buộc, tối thiểu 32 ký tự), `JWT_EXPIRES_IN` (mặc định `15m`) và
+  `RESET_TOKEN_TTL_MINUTES` (mặc định `15`, số nguyên 1–1440). Không commit `.env`; dùng
+  `.env.example` làm mẫu và thay secret trước khi chạy production.
+- `npm run dev` bật watch mode để phát triển; `npm start` chạy server trực tiếp. Cả hai yêu cầu
+  cấu hình hợp lệ và Postgres đã sẵn sàng.
 
 - Cần Docker đang chạy. Nếu sandbox không có Docker (ví dụ một số môi trường
   Codex cloud), hãy chạy trên máy local (Codex CLI / IDE) hoặc cung cấp

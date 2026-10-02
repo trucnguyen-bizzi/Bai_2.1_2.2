@@ -6,11 +6,11 @@ change.
 ## Current Phase
 
 - Bài tập 2.1 (Database) đã hoàn tất về chức năng và được kiểm chứng trên PostgreSQL thật.
-- Bài tập 2.2, Unit 06–10 hoàn tất; Unit 10 đã được kiểm chứng.
+- Bài tập 2.2, Unit 06–11 hoàn tất và đã được kiểm chứng.
 
 ## Current Goal
 
-- Unit 10 — quên/đặt lại mật khẩu; hoàn tất trên nhánh `feat/10-forgot-password`.
+- Unit 11 — kiểm chứng đầu-cuối và tài liệu API; hoàn tất trên nhánh `feat/11-e2e-docs`.
 
 ## Completed (Unit 01–05; đã kiểm chứng trên PostgreSQL thật)
 
@@ -42,7 +42,7 @@ change.
 | 08 | Đăng nhập + JWT | Hoàn tất, đã kiểm chứng |
 | 09 | Route được bảo vệ + phân quyền theo role | Hoàn tất, đã kiểm chứng |
 | 10 | Quên mật khẩu | Hoàn tất, đã kiểm chứng |
-| 11 | Kiểm chứng + tài liệu API | Chưa thực hiện |
+| 11 | Kiểm chứng + tài liệu API | Hoàn tất, đã kiểm chứng |
 
 ## In Progress
 
@@ -62,6 +62,32 @@ change.
 - [x] PASS — User xác nhận reset-password thành công một lần, token không dùng lại được và
   `reset_token_hash` là NULL sau reset.
 
+### Unit 11 — Verify when done
+
+- [x] PASS — `npm run check`: 6 suites, 42 unit tests.
+- [x] PASS — `npm run test:integration`: 6 suites, 29 tests, gồm
+  `tests/integration/authFlow.test.ts`.
+- [x] PASS — User chạy các ví dụ PowerShell trong README trên server thật: health, register, login,
+  `/me`, `/users`, forgot/reset password, login bằng mật khẩu mới và từ chối token dùng lại.
+- [x] PASS — Đủ 8 tiêu chí nghiệm thu Bài 2.2 có bằng chứng ở bảng bên dưới.
+- [x] PASS — `git ls-files .env` không in kết quả; `.env` không được Git theo dõi.
+- [x] PASS — README request bodies đã đối chiếu với `authSchemas.ts`; tên trường đều khớp.
+- [x] PASS — Lỗi reset token sai/đã dùng trả common error format qua shared error handler;
+  `tests/integration/passwordReset.test.ts` kiểm tra toàn bộ response shape.
+
+### Nghiệm thu 8 tiêu chí Bài 2.2
+
+| # | Kết quả | Bằng chứng |
+|---|---|---|
+| 1. Fastify + health | PASS | User chạy PowerShell `GET /health` trên server thật, nhận `status: ok`; `tests/integration/authFlow.test.ts`. |
+| 2. Đăng ký và hash mật khẩu | PASS | User chạy register; `tests/integration/register.test.ts` kiểm tra role user/hash/409 duplicate. |
+| 3. Đăng nhập và JWT | PASS | User chạy login; `tests/integration/login.test.ts` kiểm tra JWT và 401 cùng message. |
+| 4. `GET /me` | PASS | User chạy `/me`; `tests/integration/protectedRoutes.test.ts` kiểm tra 401 khi thiếu/sai/hết hạn token. |
+| 5. `GET /users` theo role | PASS | User xác nhận admin 200, regular user 403; `tests/integration/protectedRoutes.test.ts`. |
+| 6. Joi validation | PASS | `tests/integration/register.test.ts` và `tests/unit/authSchemas.test.ts` kiểm tra payload không hợp lệ và role bị từ chối. |
+| 7. Quên/đặt lại mật khẩu | PASS | User chạy forgot/reset, login bằng mật khẩu mới, token dùng lại bị 400; `tests/integration/passwordReset.test.ts` kiểm tra hash, hạn dùng và common error shape. |
+| 8. Check và integration | PASS | `npm run check`: 6 suites / 42 unit tests; `npm run test:integration`: 6 suites / 29 tests. |
+
 ## Checklist nghiệm thu Bài 2.1 (tick sau khi chạy thật)
 
 - [x] `npm install` thành công
@@ -79,7 +105,7 @@ change.
 
 ## Next Up
 
-- Chờ user giao Unit 11; chưa bắt đầu Unit 11.
+- Chờ user hướng dẫn bước tiếp theo; Bài tập 2.2 (Unit 06–11) đã hoàn tất.
 
 ## Open Questions
 
@@ -110,6 +136,26 @@ change.
   trước khi Postgres sẵn sàng.
 
 ## Session Notes
+
+- Unit 11 hoàn tất trên nhánh `feat/11-e2e-docs`. `npm run check` PASS (6 suites, 42 unit tests);
+  `npm run test:integration` PASS (6 suites, 29 tests, gồm `authFlow.test.ts`); `db:deploy` PASS
+  (2 migrations, không còn pending).
+- User chạy toàn bộ ví dụ PowerShell README trên server thật: health, register, login, `/me`,
+  `/users` (admin 200, regular user 403), forgot-password (response giống nhau với email có/không
+  tồn tại), reset-password dùng `token` + `password`, login bằng mật khẩu mới và token dùng lại bị từ chối 400.
+- README field names đã được đối chiếu với `authSchemas.ts`, tất cả đều khớp.
+- `POST /auth/reset-password` với token sai/đã dùng hiện ném lỗi qua shared error handler và trả
+  `{ statusCode, error, message }`; `tests/integration/passwordReset.test.ts` assert đầy đủ shape.
+- Unit 11 trước đó từng để ví dụ PowerShell PENDING vì server không khởi động được trong sandbox;
+  user sau đó đã chạy các ví dụ trên server thật. Trạng thái hiện tại dựa trên kết quả mới này.
+- Unit 11: `npm run lint:fix` PASS; `npm run check` PASS (6 suites, 42 unit tests);
+  `npm run db:up` PASS (training-postgres healthy); `npm run db:deploy` PASS (2 migrations found,
+  no pending); `npm run test:integration` PASS (6 suites, 29 tests).
+- Chưa chạy toàn bộ ví dụ PowerShell qua HTTP server thật: không có listener tại port 3000;
+  tiến trình `npm run dev` thử khởi động báo `SystemError [ERR_SYSTEM_ERROR]: A system error
+  occurred: uv_os_get_passwd returned ENOMEM (not enough memory)`. Không dừng hoặc kill tiến trình.
+- Thay đổi Unit 11 hiện chỉ gồm README API, hướng dẫn AGENTS, tracker và E2E integration test;
+  `context/architecture.md` đã mô tả đúng các endpoint và hành vi password reset nên không đổi.
 
 - Unit 10 hoàn tất trên nhánh `feat/10-forgot-password`. Theo kết quả user cung cấp, migration
   `20261002042149_add_password_reset_to_users` được tạo bằng `npm run db:migrate` và áp dụng;

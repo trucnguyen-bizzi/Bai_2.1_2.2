@@ -33,6 +33,91 @@ Kết quả mong đợi là các dòng `PASS` và `TẤT CẢ ĐẠT`.
 
 Tài khoản admin mặc định (đổi trong `.env`): `admin@example.com` / `Admin@123456`.
 
+## API
+
+Chạy Postgres và áp dụng migration trước, sau đó khởi động server bằng `npm run dev`. Mặc định API
+nghe tại `http://127.0.0.1:3000`.
+
+| Method | Endpoint | Xác thực / role | Thành công | Lỗi chính |
+|---|---|---|---|---|
+| GET | `/health` | Không | `200` | — |
+| POST | `/auth/register` | Không | `201` | `400` payload sai, `409` email/username đã dùng |
+| POST | `/auth/login` | Không | `200` có access token | `400` payload sai, `401` thông tin đăng nhập sai |
+| GET | `/me` | Bearer token | `200` user hiện tại | `401` token thiếu/sai/hết hạn |
+| GET | `/users` | Bearer token, admin | `200` danh sách user | `401` chưa xác thực, `403` không phải admin |
+| POST | `/auth/forgot-password` | Không | `202` response chung cho mọi email | `400` payload sai |
+| POST | `/auth/reset-password` | Không, cần reset token | `200` | `400` token sai/hết hạn/đã dùng hoặc payload sai |
+
+### Ví dụ PowerShell
+
+```powershell
+$baseUrl = "http://127.0.0.1:3000"
+
+# Health
+Invoke-RestMethod -Method Get -Uri "$baseUrl/health"
+
+# Register
+$registerBody = @{
+  email = "person@example.com"
+  username = "person_01"
+  password = "Training@123"
+} | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri "$baseUrl/auth/register" `
+  -ContentType "application/json" -Body $registerBody
+
+# Login and call /me with a Bearer token
+$loginBody = @{
+  username = "person_01"
+  password = "Training@123"
+} | ConvertTo-Json
+$login = Invoke-RestMethod -Method Post -Uri "$baseUrl/auth/login" `
+  -ContentType "application/json" -Body $loginBody
+$token = $login.accessToken
+Invoke-RestMethod -Method Get -Uri "$baseUrl/me" `
+  -Headers @{ Authorization = "Bearer $token" }
+
+# An admin token is required for GET /users
+$adminLoginBody = @{
+  username = "admin"
+  password = "Admin@123456"
+} | ConvertTo-Json
+$adminLogin = Invoke-RestMethod -Method Post -Uri "$baseUrl/auth/login" `
+  -ContentType "application/json" -Body $adminLoginBody
+Invoke-RestMethod -Method Get -Uri "$baseUrl/users" `
+  -Headers @{ Authorization = "Bearer $($adminLogin.accessToken)" }
+
+# Forgot password returns the same 202 response whether the email exists or not.
+# In development, copy the token printed in the server log; the API response never includes it.
+$forgotBody = @{ email = "person@example.com" } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri "$baseUrl/auth/forgot-password" `
+  -ContentType "application/json" -Body $forgotBody
+
+$resetToken = "paste-the-64-character-token-from-the-server-log"
+$resetBody = @{
+  token = $resetToken
+  password = "NewTraining@123"
+} | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri "$baseUrl/auth/reset-password" `
+  -ContentType "application/json" -Body $resetBody
+```
+
+### Biến môi trường của ứng dụng
+
+| Biến | Mặc định / yêu cầu | Mô tả |
+|---|---|---|
+| `PORT` | `3000` | Cổng HTTP, số nguyên 1–65535 |
+| `HOST` | `127.0.0.1` | Địa chỉ bind của server |
+| `JWT_SECRET` | Bắt buộc, ít nhất 32 ký tự | Secret ký JWT; không dùng giá trị mẫu trong production |
+| `JWT_EXPIRES_IN` | `15m` | Thời hạn access token JWT |
+| `RESET_TOKEN_TTL_MINUTES` | `15` | Thời hạn reset token, số nguyên 1–1440 phút |
+
+### Giới hạn đã biết
+
+- Chưa có refresh token; role được giữ trong JWT nên thay đổi role chỉ có hiệu lực với token mới.
+- Chưa có rate limit cho đăng nhập hoặc yêu cầu reset mật khẩu.
+- Email reset chưa được gửi thật; ngoài production, reset token được ghi trong server log để thử.
+- Username phân biệt chữ hoa/chữ thường.
+
 ## Map với 5 yêu cầu của bài
 
 | # | Yêu cầu | File |

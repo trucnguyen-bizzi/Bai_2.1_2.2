@@ -123,7 +123,11 @@ describe("password reset routes (needs a migrated PostgreSQL)", () => {
 
     expect(expiredResponse.statusCode).toBe(400);
     expect(expiredResponse.body).toBe(unknownResponse.body);
-    expect(expiredResponse.json().message).toBe("Invalid or expired token");
+    expect(expiredResponse.json()).toEqual({
+      statusCode: 400,
+      error: "Bad Request",
+      message: "Invalid or expired token",
+    });
   });
 
   it("keeps a token usable after password validation fails", async () => {

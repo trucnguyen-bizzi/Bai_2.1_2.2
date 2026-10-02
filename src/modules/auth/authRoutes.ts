@@ -71,7 +71,9 @@ const authRoutes: FastifyPluginAsync = async (app) => {
       const wasReset = await resetPassword(app.prisma, { token, password });
 
       if (!wasReset) {
-        return reply.status(400).send({ message: "Invalid or expired token" });
+        const error = new Error("Invalid or expired token") as FastifyError;
+        error.statusCode = 400;
+        throw error;
       }
 
       return reply.status(200).send({ message: "Password has been reset." });
