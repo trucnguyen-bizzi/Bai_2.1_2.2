@@ -1,5 +1,8 @@
 import { Prisma, Role, type PrismaClient, type User } from "@prisma/client";
 import hashPassword from "../../lib/hashPassword";
+import verifyPassword from "../../lib/verifyPassword";
+
+const dummyPasswordHash = hashPassword("fixed-dummy-password-for-timing");
 
 interface RegisterInput {
   email: string;
@@ -42,4 +45,22 @@ export async function registerUser(prisma: PrismaClient, input: RegisterInput): 
 
     throw error;
   }
+}
+
+interface LoginInput {
+  username: string;
+  password: string;
+}
+
+export async function loginUser(prisma: PrismaClient, input: LoginInput): Promise<User | null> {
+  const user = await prisma.user.findUnique({ where: { username: input.username } });
+
+  if (!user) {
+    await verifyPassword(input.password, await dummyPasswordHash);
+    return null;
+  }
+
+  const passwordIsValid = await verifyPassword(input.password, user.passwordHash);
+
+  return passwordIsValid ? user : null;
 }

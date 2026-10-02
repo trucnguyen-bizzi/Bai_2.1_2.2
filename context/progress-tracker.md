@@ -6,11 +6,11 @@ change.
 ## Current Phase
 
 - Bài tập 2.1 (Database) đã hoàn tất về chức năng và được kiểm chứng trên PostgreSQL thật.
-- Bài tập 2.2, Unit 06 (Fastify skeleton) hoàn tất theo xác nhận của user.
+- Bài tập 2.2, Unit 06–08 hoàn tất.
 
 ## Current Goal
 
-- Unit 07 — đăng ký và validate bằng Joi đã hoàn tất và được xác minh.
+- Unit 08 — đăng nhập bằng username và JWT hoàn tất, đã kiểm chứng.
 
 ## Completed (Unit 01–05; đã kiểm chứng trên PostgreSQL thật)
 
@@ -39,7 +39,8 @@ change.
 | 05 | Kiểm chứng tự động | Hoàn tất; unit và integration test đã PASS |
 | 06 | Fastify skeleton | Hoàn tất, đã xác minh (xác nhận của user) |
 | 07 | Đăng ký + validate bằng Joi | Hoàn tất, đã xác minh |
-| 08–11 | Auth Server (bài 2.2) | Chưa thực hiện |
+| 08 | Đăng nhập + JWT | Hoàn tất, đã kiểm chứng |
+| 09–11 | Auth Server (bài 2.2) | Chưa thực hiện |
 
 ## In Progress
 
@@ -62,7 +63,7 @@ change.
 
 ## Next Up
 
-- Chờ user giao Unit 08; không bắt đầu trước khi được yêu cầu.
+- Chờ user giao Unit 09; không bắt đầu trước khi được yêu cầu.
 
 ## Open Questions
 
@@ -74,6 +75,7 @@ change.
 - Team có chuẩn riêng cho TypeScript không? Hiện phần TS là bổ sung của gói này.
 - Có nên chuẩn hóa email thành chữ thường không?
 - Nên để `id` / `updated_at` được tạo bởi database thay vì Prisma không?
+- Có cần bổ sung refresh token sau này không? Unit 08 hiện chỉ cấp access token.
 
 ## Architecture Decisions
 
@@ -93,6 +95,13 @@ change.
 
 ## Session Notes
 
+- Unit 08 trên nhánh `feat/08-login-jwt` đã hoàn tất. Kết quả chạy có output do user cung cấp:
+  `npm run check` PASS (5 suites, 31 unit tests); `npm run test:integration` PASS (3 suites,
+  16 tests). Đăng nhập admin trả token với payload chỉ có `sub`, `role`, `iat`, `exp`, header
+  `alg` là `HS256`. Username không tồn tại và mật khẩu sai đều trả 401 với message
+  `Invalid username or password`. `.env.example` dùng JWT secret giả.
+- User xác nhận server từ chối khởi động khi `JWT_SECRET` thiếu hoặc ngắn hơn 32 ký tự; bằng
+  chứng bổ trợ là `tests/unit/getEnv.test.ts` có kiểm tra cả secret thiếu và secret ngắn.
 - Unit 07 trên nhánh `feat/07-register-joi` hoàn tất: `npm run lint:fix` PASS; `npm run check` PASS
   (lint/typecheck sạch, 5 suites / 28 unit tests); `npm run db:up` PASS (container healthy);
   `npm run db:deploy` PASS (không có migration pending); `npm run test:integration` PASS
