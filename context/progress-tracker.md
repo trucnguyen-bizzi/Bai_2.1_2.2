@@ -6,11 +6,11 @@ change.
 ## Current Phase
 
 - Bài tập 2.1 (Database) đã hoàn tất về chức năng và được kiểm chứng trên PostgreSQL thật.
-- Bài tập 2.2, Unit 06–08 hoàn tất.
+- Bài tập 2.2, Unit 06–09 hoàn tất; Unit 09 đã được xác minh.
 
 ## Current Goal
 
-- Unit 08 — đăng nhập bằng username và JWT hoàn tất, đã kiểm chứng.
+- Unit 09 — xác thực JWT và phân quyền route theo role; hoàn tất, đã xác minh.
 
 ## Completed (Unit 01–05; đã kiểm chứng trên PostgreSQL thật)
 
@@ -40,11 +40,12 @@ change.
 | 06 | Fastify skeleton | Hoàn tất, đã xác minh (xác nhận của user) |
 | 07 | Đăng ký + validate bằng Joi | Hoàn tất, đã xác minh |
 | 08 | Đăng nhập + JWT | Hoàn tất, đã kiểm chứng |
-| 09–11 | Auth Server (bài 2.2) | Chưa thực hiện |
+| 09 | Route được bảo vệ + phân quyền theo role | Hoàn tất, đã kiểm chứng |
+| 10–11 | Auth Server (bài 2.2) | Chưa thực hiện |
 
 ## In Progress
 
-- None yet.
+- Không có.
 
 ## Checklist nghiệm thu Bài 2.1 (tick sau khi chạy thật)
 
@@ -63,7 +64,7 @@ change.
 
 ## Next Up
 
-- Chờ user giao Unit 09; không bắt đầu trước khi được yêu cầu.
+- Chờ user giao Unit 10; chưa bắt đầu Unit 10.
 
 ## Open Questions
 
@@ -95,6 +96,16 @@ change.
 
 ## Session Notes
 
+- Unit 09 hoàn tất trên nhánh `feat/09-protected-routes`.
+- Unit 09 verification: `npm run lint:fix` PASS; `npm run check` PASS (5 suites, 31 unit tests);
+  `npm run db:up` PASS (Postgres healthy); `npm run db:deploy` PASS (không có migration pending);
+  `npm run test:integration` PASS (4 suites, 23 tests).
+- HTTP verify Unit 09: admin login và `GET /me` PASS; `/me` không token trả 401; user thường
+  đăng ký/đăng nhập rồi gọi `/users` trả 403; admin gọi `/users` trả 200. Response `/me` và
+  `/users` không có `passwordHash` hoặc `resetTokenHash`. User test `it-u09-20261002110712@example.com`
+  đã được xóa.
+- Server `npm run dev` được khởi chạy để verify và vẫn đang nghe tại `127.0.0.1:3000`; không
+  dừng hoặc kill process theo yêu cầu của user.
 - Unit 08 trên nhánh `feat/08-login-jwt` đã hoàn tất. Kết quả chạy có output do user cung cấp:
   `npm run check` PASS (5 suites, 31 unit tests); `npm run test:integration` PASS (3 suites,
   16 tests). Đăng nhập admin trả token với payload chỉ có `sub`, `role`, `iat`, `exp`, header

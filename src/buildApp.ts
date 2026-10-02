@@ -6,6 +6,7 @@ import jwtPlugin from "./plugins/jwtPlugin";
 import prismaPlugin from "./plugins/prismaPlugin";
 import healthRoutes from "./routes/healthRoutes";
 import authRoutes from "./modules/auth/authRoutes";
+import userRoutes from "./modules/users/userRoutes";
 
 interface BuildAppOptions {
   logger?: boolean;
@@ -22,6 +23,7 @@ function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   app.register(prismaPlugin);
   app.register(healthRoutes);
   app.register(authRoutes);
+  app.register(userRoutes);
 
   return app;
 }

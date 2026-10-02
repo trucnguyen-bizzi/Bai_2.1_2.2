@@ -10,6 +10,18 @@ const jwtPlugin = fastifyPlugin(async (app) => {
     sign: { expiresIn: jwtExpiresIn, algorithm: "HS256" },
     verify: { algorithms: ["HS256"] },
   });
+
+  app.decorate("authenticate", async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      reply.status(401).send({
+        statusCode: 401,
+        error: "Unauthorized",
+        message: "Unauthorized",
+      });
+    }
+  });
 });
 
 export default jwtPlugin;
