@@ -10,7 +10,7 @@ change.
 
 ## Current Goal
 
-- Tiếp tục Bài tập 2.2 theo spec của Unit 07 khi được giao.
+- Unit 07 — đăng ký và validate bằng Joi đã hoàn tất và được xác minh.
 
 ## Completed (Unit 01–05; đã kiểm chứng trên PostgreSQL thật)
 
@@ -38,7 +38,8 @@ change.
 | 04 | Seed admin | Hoàn tất, đã kiểm chứng trên PostgreSQL thật |
 | 05 | Kiểm chứng tự động | Hoàn tất; unit và integration test đã PASS |
 | 06 | Fastify skeleton | Hoàn tất, đã xác minh (xác nhận của user) |
-| 07–11 | Auth Server (bài 2.2) | Chưa thực hiện |
+| 07 | Đăng ký + validate bằng Joi | Hoàn tất, đã xác minh |
+| 08–11 | Auth Server (bài 2.2) | Chưa thực hiện |
 
 ## In Progress
 
@@ -61,7 +62,7 @@ change.
 
 ## Next Up
 
-- Tiếp tục Unit 07 theo `context/specs/07-*` khi được giao.
+- Chờ user giao Unit 08; không bắt đầu trước khi được yêu cầu.
 
 ## Open Questions
 
@@ -92,6 +93,15 @@ change.
 
 ## Session Notes
 
+- Unit 07 trên nhánh `feat/07-register-joi` hoàn tất: `npm run lint:fix` PASS; `npm run check` PASS
+  (lint/typecheck sạch, 5 suites / 28 unit tests); `npm run db:up` PASS (container healthy);
+  `npm run db:deploy` PASS (không có migration pending); `npm run test:integration` PASS
+  (2 suites / 12 tests).
+- Unit 07 HTTP verify: server nghe tại `127.0.0.1:3000`; `Invoke-RestMethod` đăng ký user trả
+  201 với role `user` và không trả `passwordHash`; duplicate email trả 409 cùng message chung;
+  `role: admin` trả 400; mật khẩu 7 ký tự trả 400 với details field `password`. PostgreSQL query
+  xác nhận role `user` và hash bắt đầu `$2b$`; các user test đã được xóa.
+- User xác nhận Prisma Studio: user đăng ký có role `user` và `passwordHash` bắt đầu bằng `$2b$`.
 - User xác nhận trên máy mình: `npm run check` PASS (lint sạch, typecheck OK, 4 suites và 18
   unit tests PASS). Lỗi TS18046 ở `src/plugins/errorHandler.ts` đã được sửa bằng cách định kiểu
   lỗi là `FastifyError` và lấy tên lỗi từ `http.STATUS_CODES`.
