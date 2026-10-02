@@ -4,6 +4,7 @@ interface AppEnv {
   host: string;
   jwtSecret: string;
   jwtExpiresIn: string;
+  resetTokenTtlMinutes: number;
 }
 
 const exampleJwtSecret = "replace-this-example-secret-with-a-random-48-byte-value";
@@ -14,6 +15,8 @@ function getEnv(env: NodeJS.ProcessEnv = process.env): AppEnv {
   const host = env.HOST ?? "127.0.0.1";
   const jwtSecret = env.JWT_SECRET;
   const jwtExpiresIn = env.JWT_EXPIRES_IN ?? "15m";
+  const resetTokenTtlValue = env.RESET_TOKEN_TTL_MINUTES ?? "15";
+  const resetTokenTtlMinutes = Number(resetTokenTtlValue);
   const port = Number(portValue);
 
   if (nodeEnv !== "development" && nodeEnv !== "test" && nodeEnv !== "production") {
@@ -28,11 +31,19 @@ function getEnv(env: NodeJS.ProcessEnv = process.env): AppEnv {
     throw new Error("JWT_SECRET is required and must be at least 32 characters.");
   }
 
+  if (
+    !Number.isInteger(resetTokenTtlMinutes) ||
+    resetTokenTtlMinutes < 1 ||
+    resetTokenTtlMinutes > 1440
+  ) {
+    throw new Error("RESET_TOKEN_TTL_MINUTES must be an integer between 1 and 1440.");
+  }
+
   if (nodeEnv === "production" && jwtSecret === exampleJwtSecret) {
     throw new Error("JWT_SECRET must not use the example value in production.");
   }
 
-  return { nodeEnv, port, host, jwtSecret, jwtExpiresIn };
+  return { nodeEnv, port, host, jwtSecret, jwtExpiresIn, resetTokenTtlMinutes };
 }
 
 export default getEnv;

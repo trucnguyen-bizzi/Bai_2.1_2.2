@@ -6,11 +6,11 @@ change.
 ## Current Phase
 
 - Bài tập 2.1 (Database) đã hoàn tất về chức năng và được kiểm chứng trên PostgreSQL thật.
-- Bài tập 2.2, Unit 06–09 hoàn tất; Unit 09 đã được xác minh.
+- Bài tập 2.2, Unit 06–10 hoàn tất; Unit 10 đã được kiểm chứng.
 
 ## Current Goal
 
-- Unit 09 — xác thực JWT và phân quyền route theo role; hoàn tất, đã xác minh.
+- Unit 10 — quên/đặt lại mật khẩu; hoàn tất trên nhánh `feat/10-forgot-password`.
 
 ## Completed (Unit 01–05; đã kiểm chứng trên PostgreSQL thật)
 
@@ -41,11 +41,26 @@ change.
 | 07 | Đăng ký + validate bằng Joi | Hoàn tất, đã xác minh |
 | 08 | Đăng nhập + JWT | Hoàn tất, đã kiểm chứng |
 | 09 | Route được bảo vệ + phân quyền theo role | Hoàn tất, đã kiểm chứng |
-| 10–11 | Auth Server (bài 2.2) | Chưa thực hiện |
+| 10 | Quên mật khẩu | Hoàn tất, đã kiểm chứng |
+| 11 | Kiểm chứng + tài liệu API | Chưa thực hiện |
 
 ## In Progress
 
 - Không có.
+
+### Unit 10 — Verify when done
+
+- [x] PASS — Migration `20261002042149_add_password_reset_to_users` được tạo bằng
+  `npm run db:migrate` và đã được áp dụng.
+- [ ] PENDING — Chưa có kết quả xác nhận trực tiếp `\d users` có hai cột reset và unique index.
+- [x] PASS — `npm run check`: 6 suites, 42 unit tests.
+- [x] PASS — `npm run test:integration`: 5 suites, 28 tests; sau khi sửa cách tìm log token trong
+  `tests/integration/passwordReset.test.ts`.
+- [x] PASS — User xác nhận forgot-password trả cùng response 202 cho email có và không tồn tại;
+  token chỉ xuất hiện trong server log, không có trong HTTP response.
+- [ ] PENDING — Chưa có kết quả Prisma Studio xác nhận `resetTokenHash` là hash khác token ban đầu.
+- [x] PASS — User xác nhận reset-password thành công một lần, token không dùng lại được và
+  `reset_token_hash` là NULL sau reset.
 
 ## Checklist nghiệm thu Bài 2.1 (tick sau khi chạy thật)
 
@@ -64,7 +79,7 @@ change.
 
 ## Next Up
 
-- Chờ user giao Unit 10; chưa bắt đầu Unit 10.
+- Chờ user giao Unit 11; chưa bắt đầu Unit 11.
 
 ## Open Questions
 
@@ -95,6 +110,19 @@ change.
   trước khi Postgres sẵn sàng.
 
 ## Session Notes
+
+- Unit 10 hoàn tất trên nhánh `feat/10-forgot-password`. Theo kết quả user cung cấp, migration
+  `20261002042149_add_password_reset_to_users` được tạo bằng `npm run db:migrate` và áp dụng;
+  `npm run check` PASS (6 suites, 42 unit tests); `npm run test:integration` PASS (5 suites,
+  28 tests) sau khi sửa lookup log token.
+- Unit 10 manual verification do user xác nhận: forgot-password trả cùng response 202 cho email
+  có thật và không tồn tại; token chỉ có trong server log, không có trong HTTP response;
+  reset-password dùng được một lần, token không tái sử dụng được, `reset_token_hash` là NULL sau reset.
+- Trước khi có kết quả hoàn tất, lần thử trong môi trường này từng ghi nhận `npm run db:migrate`
+  không-interactive, `prisma generate` lỗi EPERM và integration fail vì thiếu cột. Các lỗi ban đầu
+  đã được khắc phục trên máy user; không dùng kết quả cũ làm trạng thái hiện tại.
+- `npm run lint:fix` PASS; `npm test` PASS (6 suites, 42 tests), và password reset integration
+  riêng PASS (1 suite, 5 tests) sau khi chỉnh cách tìm log `Password reset token`.
 
 - Unit 09 hoàn tất trên nhánh `feat/09-protected-routes`.
 - Unit 09 verification: `npm run lint:fix` PASS; `npm run check` PASS (5 suites, 31 unit tests);

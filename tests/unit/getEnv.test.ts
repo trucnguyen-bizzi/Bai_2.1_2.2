@@ -10,6 +10,7 @@ describe("getEnv", () => {
       host: "127.0.0.1",
       jwtSecret: validJwtSecret,
       jwtExpiresIn: "15m",
+      resetTokenTtlMinutes: 15,
     });
   });
 
@@ -28,7 +29,20 @@ describe("getEnv", () => {
       host: "0.0.0.0",
       jwtSecret: env.JWT_SECRET,
       jwtExpiresIn: "30m",
+      resetTokenTtlMinutes: 15,
     });
+  });
+
+  it("reads a configured reset token TTL", () => {
+    expect(getEnv({ JWT_SECRET: validJwtSecret, RESET_TOKEN_TTL_MINUTES: "60" })).toMatchObject({
+      resetTokenTtlMinutes: 60,
+    });
+  });
+
+  it.each(["0", "1441", "1.5", "abc"])("rejects invalid reset token TTL %s", (ttl) => {
+    expect(() => getEnv({ JWT_SECRET: validJwtSecret, RESET_TOKEN_TTL_MINUTES: ttl })).toThrow(
+      "RESET_TOKEN_TTL_MINUTES must be an integer between 1 and 1440.",
+    );
   });
 
   it.each(["abc", "0", "70000"])("rejects invalid PORT value %s", (port) => {

@@ -1,6 +1,7 @@
 import { Prisma, Role, type PrismaClient, type User } from "@prisma/client";
 import hashPassword from "../../lib/hashPassword";
 import verifyPassword from "../../lib/verifyPassword";
+import { generateResetToken, hashResetToken } from "./resetToken";
 
 const dummyPasswordHash = hashPassword("fixed-dummy-password-for-timing");
 
@@ -63,4 +64,56 @@ export async function loginUser(prisma: PrismaClient, input: LoginInput): Promis
   const passwordIsValid = await verifyPassword(input.password, user.passwordHash);
 
   return passwordIsValid ? user : null;
+}
+
+export async function requestPasswordReset(
+  prisma: PrismaClient,
+  email: string,
+  ttlMinutes: number,
+  now = new Date(),
+): Promise<{ user: User; token: string } | null> {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    return null;
+  }
+
+  const token = generateResetToken();
+  const resetTokenHash = hashResetToken(token);
+  const resetTokenExpiresAt = new Date(now.getTime() + ttlMinutes * 60 * 1000);
+  const updatedUser = await prisma.user.update({
+    where: { id: user.id },
+    data: { resetTokenHash, resetTokenExpiresAt },
+  });
+
+  return { user: updatedUser, token };
+}
+
+interface ResetPasswordInput {
+  token: string;
+  password: string;
+}
+
+export async function resetPassword(
+  prisma: PrismaClient,
+  input: ResetPasswordInput,
+  now = new Date(),
+): Promise<boolean> {
+  const resetTokenHash = hashResetToken(input.token);
+  const user = await prisma.user.findFirst({
+    where: { resetTokenHash, resetTokenExpiresAt: { gt: now } },
+    select: { id: true },
+  });
+
+  if (!user) {
+    return false;
+  }
+
+  const passwordHash = await hashPassword(input.password);
+  const result = await prisma.user.updateMany({
+    where: { id: user.id, resetTokenHash },
+    data: { passwordHash, resetTokenHash: null, resetTokenExpiresAt: null },
+  });
+
+  return result.count === 1;
 }

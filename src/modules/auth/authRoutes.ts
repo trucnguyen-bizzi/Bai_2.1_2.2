@@ -1,7 +1,14 @@
 import type { FastifyError, FastifyPluginAsync } from "fastify";
-import { loginUser, registerUser } from "./authService";
-import { loginSchema, registerSchema } from "./authSchemas";
+import { loginUser, registerUser, requestPasswordReset, resetPassword } from "./authService";
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from "./authSchemas";
 import toPublicUser from "../users/toPublicUser";
+import getEnv from "../../config/getEnv";
+import sendPasswordResetEmail from "../../lib/sendPasswordResetEmail";
 
 const authRoutes: FastifyPluginAsync = async (app) => {
   app.post("/auth/login", { schema: { body: loginSchema } }, async (request, reply) => {
@@ -38,6 +45,38 @@ const authRoutes: FastifyPluginAsync = async (app) => {
 
     return reply.status(201).send({ user: toPublicUser(user) });
   });
+
+  app.post(
+    "/auth/forgot-password",
+    { schema: { body: forgotPasswordSchema } },
+    async (request, reply) => {
+      const { email } = request.body as { email: string };
+      const result = await requestPasswordReset(app.prisma, email, getEnv().resetTokenTtlMinutes);
+
+      if (result) {
+        sendPasswordResetEmail(app.log, result.user.email, result.token);
+      }
+
+      return reply.status(202).send({
+        message: "If the email exists, a reset link has been sent.",
+      });
+    },
+  );
+
+  app.post(
+    "/auth/reset-password",
+    { schema: { body: resetPasswordSchema } },
+    async (request, reply) => {
+      const { token, password } = request.body as { token: string; password: string };
+      const wasReset = await resetPassword(app.prisma, { token, password });
+
+      if (!wasReset) {
+        return reply.status(400).send({ message: "Invalid or expired token" });
+      }
+
+      return reply.status(200).send({ message: "Password has been reset." });
+    },
+  );
 };
 
 export default authRoutes;

@@ -1,4 +1,8 @@
-import { registerSchema } from "../../src/modules/auth/authSchemas";
+import {
+  forgotPasswordSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from "../../src/modules/auth/authSchemas";
 
 describe("registerSchema", () => {
   it("accepts a valid email", () => {
@@ -66,5 +70,37 @@ describe("registerSchema", () => {
     const { error } = registerSchema.validate({}, { abortEarly: false });
 
     expect(error?.details.map(({ path }) => path[0])).toEqual(["email", "username", "password"]);
+  });
+});
+
+describe("forgotPasswordSchema", () => {
+  it("normalizes the email", () => {
+    const { value } = forgotPasswordSchema.validate({ email: " Person@Example.COM " });
+
+    expect(value.email).toBe("person@example.com");
+  });
+});
+
+describe("resetPasswordSchema", () => {
+  it("accepts a 64-character hex token and valid password", () => {
+    const { error } = resetPasswordSchema.validate({
+      token: "a".repeat(64),
+      password: "newPassword1",
+    });
+
+    expect(error).toBeUndefined();
+  });
+
+  it("rejects invalid tokens and unknown fields", () => {
+    const { error } = resetPasswordSchema.validate(
+      {
+        token: "not-a-token",
+        password: "newPassword1",
+        extra: true,
+      },
+      { abortEarly: false },
+    );
+
+    expect(error?.details).toHaveLength(2);
   });
 });
