@@ -6,11 +6,11 @@ change.
 ## Current Phase
 
 - Bài tập 2.1 (Database) đã hoàn tất về chức năng và được kiểm chứng trên PostgreSQL thật.
-- Chuyển sang Bài tập 2.2; bước tiếp theo là viết spec Unit 06 (Fastify skeleton) trước khi viết code.
+- Bài tập 2.2, Unit 06 (Fastify skeleton) hoàn tất theo xác nhận của user.
 
 ## Current Goal
 
-- Bắt đầu Bài tập 2.2 bằng việc viết spec Unit 06 (Fastify skeleton); chưa viết spec hoặc code trong phiên này.
+- Tiếp tục Bài tập 2.2 theo spec của Unit 07 khi được giao.
 
 ## Completed (Unit 01–05; đã kiểm chứng trên PostgreSQL thật)
 
@@ -37,7 +37,8 @@ change.
 | 03 | Prisma schema và migration | Hoàn tất, đã kiểm chứng trên PostgreSQL thật |
 | 04 | Seed admin | Hoàn tất, đã kiểm chứng trên PostgreSQL thật |
 | 05 | Kiểm chứng tự động | Hoàn tất; unit và integration test đã PASS |
-| 06–10 | Auth Server (bài 2.2) | Chưa viết spec |
+| 06 | Fastify skeleton | Hoàn tất, đã xác minh (xác nhận của user) |
+| 07–11 | Auth Server (bài 2.2) | Chưa thực hiện |
 
 ## In Progress
 
@@ -60,8 +61,7 @@ change.
 
 ## Next Up
 
-- Viết spec cho Unit 06 (Fastify skeleton) theo mẫu trong `context/specs/` trước khi viết code.
-- Sau spec Unit 06: tiếp tục Bài tập 2.2 (Fastify, JWT, Joi) theo phạm vi được giao.
+- Tiếp tục Unit 07 theo `context/specs/07-*` khi được giao.
 
 ## Open Questions
 
@@ -92,6 +92,12 @@ change.
 
 ## Session Notes
 
+- User xác nhận trên máy mình: `npm run check` PASS (lint sạch, typecheck OK, 4 suites và 18
+  unit tests PASS). Lỗi TS18046 ở `src/plugins/errorHandler.ts` đã được sửa bằng cách định kiểu
+  lỗi là `FastifyError` và lấy tên lỗi từ `http.STATUS_CODES`.
+- User xác nhận `npm run dev` nghe tại `127.0.0.1:3000`; `GET /health` trả `status: ok`; route
+  không tồn tại trả 404 theo định dạng lỗi chung; `PORT=abc` báo lỗi cấu hình.
+- Đã kiểm tra phạm vi Unit 06: chưa thêm route auth.
 - Docker Desktop phải đang chạy trước `npm run db:up`.
 - Kết quả chạy thực tế do user cung cấp trên Windows (Docker khả dụng): `docker compose ps` báo
   `training-postgres` healthy, `0.0.0.0:5433->5432/tcp`; `npm run db:deploy` áp dụng migration

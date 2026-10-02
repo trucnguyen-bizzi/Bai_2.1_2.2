@@ -1,15 +1,23 @@
-import prisma from "./lib/prisma";
+import buildApp from "./buildApp";
+import getEnv from "./config/getEnv";
 
-async function main(): Promise<void> {
-  const total = await prisma.user.count();
-  console.log(`Database connected. Total users: ${total}`);
+async function startServer(): Promise<void> {
+  const { host, port } = getEnv();
+  const app = buildApp();
+
+  try {
+    await app.listen({ host, port });
+
+    const closeServer = async (): Promise<void> => {
+      await app.close();
+    };
+
+    process.once("SIGINT", closeServer);
+    process.once("SIGTERM", closeServer);
+  } catch (error: unknown) {
+    app.log.error(error);
+    process.exit(1);
+  }
 }
 
-main()
-  .catch((error: unknown) => {
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+startServer();

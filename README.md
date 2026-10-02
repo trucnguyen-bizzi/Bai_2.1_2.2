@@ -19,6 +19,9 @@ npm run setup
 Kiểm tra: `npm run check` (ESLint + Prettier + typecheck + unit test). Tự sửa lỗi lint/format: `npm run lint:fix`.
 Test: `npm test` (unit, không cần DB) và `npm run test:integration` (cần Postgres đã chạy và migrate).
 
+Chạy Fastify server: `npm run dev` (watch) hoặc `npm start`. Mặc định server nghe tại
+`127.0.0.1:3000`; có thể cấu hình bằng `HOST` và `PORT` trong `.env`.
+
 ### Lỗi hay gặp trên Windows
 
 Nếu container Postgres báo `Healthy` nhưng Prisma gặp lỗi `P1000`, có thể một PostgreSQL khác

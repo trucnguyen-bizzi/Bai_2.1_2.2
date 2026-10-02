@@ -54,6 +54,8 @@ Từng bước riêng:
 | `npm run db:seed` | Seed admin (idempotent) |
 | `npm run db:verify` | Kiểm tra tự động yêu cầu 2.1, exit 0 nếu đạt |
 | `npm run db:studio` | Xem dữ liệu |
+| `npm run dev` | Chạy Fastify server ở chế độ watch |
+| `npm start` | Chạy Fastify server |
 | `npm run typecheck` | Generate + `tsc --noEmit` |
 | `npm run lint` | ESLint + Prettier check theo coding standard của team |
 | `npm run lint:fix` | Tự sửa lỗi lint và format |
